@@ -1,0 +1,8 @@
+
+services:
+  turkey-clock:
+    build: .
+    container_name: turkey-clock
+    ports:
+      - "8080:8080"
+    restart: always
