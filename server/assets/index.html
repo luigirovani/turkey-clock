@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turkey Clock</title>
+    <link href="https://aecrypto.io/static/fonts/fonts.css" rel="stylesheet">
+    <link rel="icon" href="https://aecrypto.io/static/icons/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="https://aecrypto.io/static/icons/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" href="https://aecrypto.io/static/icons/favicon-16x16.png" sizes="16x16">
+    <link rel="icon" href="https://aecrypto.io/static/icons/favicon-48x48.png" sizes="48x48">
+    <link rel="icon" href="https://aecrypto.io/static/icons/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="https://aecrypto.io/static/icons/apple-touch-icon.png">
+<style>{{.Style}}</style>
+</head>
+<body>
+    <div class="ae-card" id="main-card">
+        <img id="turkey-icon" src="https://aecrypto.io/static/cartoons/{{if .NTPData.CurrentTime}}turkey_smiling.png{{else}}turkey_depressed.png{{end}}" class="turkey-img">
+        
+        <p class="ae-kicker" id="status-label">{{if .NTPData.CurrentTime}}Current Time{{else}}NTP Connection Failed{{end}}</p>
+        
+        <div class="time-box">
+            <div id="clock" class="time-display">{{if .NTPData.CurrentTime}}{{.NTPData.CurrentTime}}{{else}}--:--:--{{end}}</div>
+        </div>
+        
+        <p id="timezone-label" style="font-weight: 600; color: var(--ae-muted);">{{.NTPData.TimeZone}}</p>
+
+        <div class="ae-table-container">
+            <p class="ae-kicker response" style="font-size: 0.65rem; opacity: 0.7;">Full NTP Server Response</p>
+            <table class="ae-table">
+                <tbody id="data-table">
+                    {{if .NTPData.NTPResponse}}
+                        <tr><td class="label">NTP Server</td><td class="value">{{.NTPData.NTPResponse.server}}</td></tr>
+                    {{end}}
+                    <tr><td class="label">DateTime (ISO)</td><td class="value" id="val-iso">{{.NTPData.DateTime}}</td></tr>
+                    <tr><td class="label">Timestamp (UNIX)</td><td class="value" id="val-ts">{{.NTPData.Timestamp}}</td></tr>
+                    {{if .NTPData.NTPResponse}}
+                        <tr><td class="label">Stratum: </td><td class="value">{{.NTPData.NTPResponse.stratum}}</td></tr>
+                        <tr><td class="label">Root Dispersion: </td><td class="value">{{.NTPData.NTPResponse.root_dispersion}}</td></tr>
+                        <tr><td class="label">Root Distance: </td><td class="value">{{.NTPData.NTPResponse.root_distance}}</td></tr>
+                        <tr><td class="label">Round-Trip Time: </td><td class="value">{{.NTPData.NTPResponse.rtt}}</td></tr>
+
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="ae-card">
+        <p class="ae-kicker">API Example</p>
+        <pre class="ae-code-block">curl "{{.BaseURL}}/time?timezone=America/Sao_Paulo"</pre>
+
+        <p class="ae-kicker response" style="font-size: 0.7rem; opacity: 0.9; margin-top: 16px;">Live JSON Response</p>
+        <pre class="ae-code-block" id="api-example-json">Carregando resposta da API...</pre>
+    </div>
+
+    <script>
+        window.__NTP_DATA__ = {{.NTPJSON}};
+
+        fetch('/time?timezone=America/Sao_Paulo')
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                var el = document.getElementById('api-example-json');
+                if (el) {
+                    el.textContent = JSON.stringify(data, null, 2);
+                }
+            })
+            .catch(function(err) {
+                var el = document.getElementById('api-example-json');
+                if (el) {
+                    el.textContent = 'Erro ao buscar JSON: ' + err.message;
+                }
+            });
+    </script>
+    <script>{{.Script}}</script>
+
+    {{if .GOOGLE_ANALYTICS_ID}}
+        <script>
+            setTimeout(() => {
+            var s = document.createElement("script");
+            s.src = "https://www.googletagmanager.com/gtag/js?id={{.GOOGLE_ANALYTICS_ID}}";
+            s.async = true;
+            document.head.appendChild(s);
+
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            window.gtag = gtag;
+
+            gtag("js", new Date());
+            gtag("config", "{{.GOOGLE_ANALYTICS_ID}}");
+            }, 1000);
+        </script>
+    {{end}}
+</body>
+</html>
